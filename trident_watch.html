@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRITON — Forged in Depth</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #B8973A;
+    --gold-light: #D4AE55;
+    --gold-pale: #EDD98A;
+    --deep: #050810;
+    --navy: #0A0F1E;
+    --slate: #131929;
+    --muted: rgba(184, 151, 58, 0.18);
+    --text-dim: rgba(220, 210, 185, 0.55);
+    --text-main: rgba(230, 220, 195, 0.9);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--deep);
+    color: var(--text-main);
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* SCROLL PROGRESS */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-pale));
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 900;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem;
+    background: linear-gradient(to bottom, rgba(5,8,16,0.95), transparent);
+  }
+  .nav-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 3rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold-light); }
+
+  /* HERO */
+  #hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .star-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .star-field::before, .star-field::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 20%, rgba(184,151,58,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 72% 8%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 40% 45%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 33%, rgba(184,151,58,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 75%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(2px 2px at 33% 88%, rgba(184,151,58,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 95% 80%, rgba(255,255,255,0.25) 0%, transparent 100%);
+  }
+
+  /* Ocean glow from below */
+  .hero-glow {
+    position: absolute;
+    bottom: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 60vh;
+    background: radial-gradient(ellipse at center bottom, rgba(10,60,120,0.4) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #fff;
+    line-height: 0.9;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+  .hero-title span { color: var(--gold); }
+
+  .hero-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    color: var(--text-dim);
+    margin-top: 1.5rem;
+    letter-spacing: 0.08em;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+
+  /* WATCH CONTAINER */
+  .watch-wrapper {
+    position: relative;
+    margin-top: 4rem;
+    opacity: 0;
+    animation: fadeUp 1.2s 1s forwards;
+  }
+
+  /* WATCH SVG */
+  #watch-svg {
+    width: clamp(280px, 35vw, 420px);
+    height: clamp(280px, 35vw, 420px);
+    filter: drop-shadow(0 0 40px rgba(184,151,58,0.25)) drop-shadow(0 20px 60px rgba(0,0,20,0.8));
+  }
+
+  /* Watch face rotation */
+  #watch-face-group {
+    transform-origin: center;
+    animation: spinFace 40s linear infinite;
+  }
+
+  /* Seconds hand */
+  #seconds-hand {
+    transform-origin: 200px 200px;
+    animation: spinSeconds 60s steps(60) infinite;
+  }
+  #minutes-hand {
+    transform-origin: 200px 200px;
+    animation: spinMinutes 3600s linear infinite;
+  }
+  #hours-hand {
+    transform-origin: 200px 200px;
+    animation: spinHours 43200s linear infinite;
+  }
+
+  @keyframes spinFace {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spinSeconds {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spinMinutes {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spinHours {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 1.8s forwards;
+  }
+  .scroll-cue span {
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 8rem 4rem;
+    width: 100%;
+  }
+
+  /* REVEAL ANIMATION */
+  .reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.25s; }
+  .reveal-delay-3 { transition-delay: 0.4s; }
+  .reveal-delay-4 { transition-delay: 0.55s; }
+
+  /* DIVIDER */
+  .gold-line {
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    margin: 2rem 0;
+  }
+
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+  }
+
+  .section-heading {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #fff;
+    margin: 1rem 0 2rem;
+  }
+
+  .section-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+    line-height: 1.85;
+    color: var(--text-dim);
+    max-width: 560px;
+  }
+
+  /* SECTION 1 - ABOUT */
+  #about {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--deep) 60%);
+  }
+  #about .section-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+  .about-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 3rem;
+  }
+  .stat-cell {
+    background: var(--muted);
+    padding: 2rem;
+    border: 1px solid rgba(184,151,58,0.12);
+  }
+  .stat-cell:first-child { border-top-left-radius: 4px; }
+  .stat-cell:nth-child(2) { border-top-right-radius: 4px; }
+  .stat-cell:nth-child(3) { border-bottom-left-radius: 4px; }
+  .stat-cell:last-child { border-bottom-right-radius: 4px; }
+  .stat-number {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 0.5rem;
+    font-weight: 300;
+  }
+
+  /* Decorative trident watermark */
+  .trident-watermark {
+    position: absolute;
+    right: -5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 500px;
+    height: 500px;
+    opacity: 0.03;
+    pointer-events: none;
+  }
+
+  /* SECTION 2 - COLLECTION / BUDGET */
+  #collection {
+    background: var(--slate);
+  }
+  #collection .section-inner {
+    text-align: center;
+  }
+  .collection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 5rem;
+    background: rgba(184,151,58,0.15);
+    border: 1px solid rgba(184,151,58,0.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .collection-card {
+    background: var(--navy);
+    padding: 3.5rem 2.5rem;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+  .collection-card:hover {
+    background: rgba(184,151,58,0.06);
+  }
+  .collection-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .collection-card:hover::before { opacity: 1; }
+  .card-number {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    margin-bottom: 2rem;
+  }
+  .card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #fff;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  .card-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  .card-price {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+  }
+
+  /* Budget Banner */
+  #budget {
+    background: var(--deep);
+    min-height: 50vh;
+  }
+  .budget-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 6rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4rem;
+    border-top: 1px solid rgba(184,151,58,0.15);
+    border-bottom: 1px solid rgba(184,151,58,0.15);
+  }
+  .budget-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 300;
+    margin-bottom: 1rem;
+  }
+  .budget-amount {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+  .budget-amount span { color: var(--gold); }
+  .budget-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    max-width: 480px;
+    line-height: 1.8;
+  }
+
+  /* SECTION 3 - CRAFTSMANSHIP */
+  #craft {
+    background: linear-gradient(to right, var(--deep), var(--navy));
+  }
+  #craft .section-inner {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 8rem;
+    align-items: center;
+  }
+  .craft-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 3rem;
+  }
+  .feature-item {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(184,151,58,0.1);
+  }
+  .feature-item:first-child { border-top: 1px solid rgba(184,151,58,0.1); }
+  .feature-num {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    color: var(--gold);
+    min-width: 40px;
+    letter-spacing: 0.2em;
+    padding-top: 0.2rem;
+  }
+  .feature-text h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+  .feature-text p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* Watch diagram right side */
+  .watch-detail-svg {
+    width: 100%;
+    max-width: 480px;
+    filter: drop-shadow(0 0 30px rgba(184,151,58,0.15));
+  }
+
+  /* SECTION 4 - HERITAGE */
+  #heritage {
+    background: var(--slate);
+    text-align: center;
+  }
+  #heritage .section-inner {
+    text-align: center;
+  }
+  .heritage-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    color: #fff;
+    line-height: 1.5;
+    max-width: 800px;
+    margin: 3rem auto;
+    position: relative;
+  }
+  .heritage-quote::before {
+    content: '"';
+    font-size: 8rem;
+    color: rgba(184,151,58,0.12);
+    position: absolute;
+    top: -2rem;
+    left: -2rem;
+    line-height: 1;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--deep);
+    padding: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(184,151,58,0.1);
+  }
+  .footer-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+  }
+  .footer-copy {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* DEEP OCEAN SECTION DIVIDER */
+  .ocean-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), rgba(184,151,58,0.3), transparent);
+    position: relative;
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<nav>
+  <a class="nav-logo" href="#hero">TRITON</a>
+  <ul class="nav-links">
+    <li><a href="#about">Heritage</a></li>
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#craft">Craft</a></li>
+    <li><a href="#heritage">Atelier</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="star-field"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">Maison de Haute Horlogerie · Est. MMXXV</p>
+    <h1 class="hero-title">TRI<span>⚓</span>TON</h1>
+    <p class="hero-sub">Forged from the deep. Measured by the infinite.</p>
+
+    <div class="watch-wrapper">
+      <!-- THE SPINNING WATCH -->
+      <svg id="watch-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="caseGrad" cx="50%" cy="35%" r="60%">
+            <stop offset="0%" stop-color="#2A2318"/>
+            <stop offset="40%" stop-color="#1A150E"/>
+            <stop offset="100%" stop-color="#0A0805"/>
+          </radialGradient>
+          <radialGradient id="dialGrad" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#0D1428"/>
+            <stop offset="60%" stop-color="#070D1C"/>
+            <stop offset="100%" stop-color="#030710"/>
+          </radialGradient>
+          <radialGradient id="bezelGrad" cx="40%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#C4A245"/>
+            <stop offset="30%" stop-color="#8A6B1F"/>
+            <stop offset="60%" stop-color="#B8973A"/>
+            <stop offset="100%" stop-color="#6B4F15"/>
+          </radialGradient>
+          <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(184,151,58,0.08)"/>
+            <stop offset="100%" stop-color="rgba(184,151,58,0)"/>
+          </radialGradient>
+          <filter id="luminance">
+            <feGaussianBlur stdDeviation="1.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Strap top -->
+        <rect x="175" y="10" width="50" height="60" rx="6" fill="#151008"/>
+        <rect x="181" y="14" width="38" height="52" rx="4" fill="#0F0B05"/>
+        <!-- Strap notches -->
+        <line x1="186" y1="22" x2="214" y2="22" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="30" x2="214" y2="30" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="38" x2="214" y2="38" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="46" x2="214" y2="46" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="54" x2="214" y2="54" stroke="#2A2010" stroke-width="1"/>
+
+        <!-- Strap bottom -->
+        <rect x="175" y="330" width="50" height="60" rx="6" fill="#151008"/>
+        <rect x="181" y="334" width="38" height="52" rx="4" fill="#0F0B05"/>
+        <line x1="186" y1="342" x2="214" y2="342" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="350" x2="214" y2="350" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="358" x2="214" y2="358" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="366" x2="214" y2="366" stroke="#2A2010" stroke-width="1"/>
+        <line x1="186" y1="374" x2="214" y2="374" stroke="#2A2010" stroke-width="1"/>
+
+        <!-- Crown / Winder -->
+        <rect x="334" y="188" width="24" height="24" rx="5" fill="#8A6B1F"/>
+        <rect x="336" y="190" width="20" height="20" rx="4" fill="#6B4F15"/>
+        <line x1="340" y1="196" x2="354" y2="196" stroke="#C4A245" stroke-width="0.8"/>
+        <line x1="340" y1="200" x2="354" y2="200" stroke="#C4A245" stroke-width="0.8"/>
+        <line x1="340" y1="204" x2="354" y2="204" stroke="#C4A245" stroke-width="0.8"/>
+
+        <!-- Outer case -->
+        <circle cx="200" cy="200" r="155" fill="url(#caseGrad)" stroke="#3A2E14" stroke-width="1.5"/>
+
+        <!-- Gold bezel ring -->
+        <circle cx="200" cy="200" r="148" fill="url(#bezelGrad)"/>
+
+        <!-- Bezel minute markers (60 ticks) -->
+        <g id="watch-face-group">
+          <!-- Minute ticks on bezel -->
+          <g stroke="#0A0810" stroke-width="1.2">
+            <!-- Generated via JS below -->
+          </g>
+
+          <!-- Inner bezel -->
+          <circle cx="200" cy="200" r="135" fill="#0A0810" stroke="#B8973A" stroke-width="0.8"/>
+
+          <!-- Dial -->
+          <circle cx="200" cy="200" r="130" fill="url(#dialGrad)"/>
+          <circle cx="200" cy="200" r="130" fill="url(#innerGlow)"/>
+
+          <!-- Hour markers (12) -->
+          <!-- 12 o'clock -->
+          <rect x="197" y="82" width="6" height="18" rx="1.5" fill="#B8973A"/>
+          <!-- 3 o'clock -->
+          <rect x="300" y="197" width="18" height="6" rx="1.5" fill="#B8973A"/>
+          <!-- 6 o'clock -->
+          <rect x="197" y="300" width="6" height="18" rx="1.5" fill="#B8973A"/>
+          <!-- 9 o'clock -->
+          <rect x="82" y="197" width="18" height="6" rx="1.5" fill="#B8973A"/>
+
+          <!-- Smaller hour markers (2,4,5,7,8,10,11,1) -->
+          <!-- 1 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(30 200 200)"/>
+          <!-- 2 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(60 200 200)"/>
+          <!-- 4 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(120 200 200)"/>
+          <!-- 5 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(150 200 200)"/>
+          <!-- 7 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(210 200 200)"/>
+          <!-- 8 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(240 200 200)"/>
+          <!-- 10 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(300 200 200)"/>
+          <!-- 11 -->
+          <rect x="246" y="91" width="5" height="14" rx="1" fill="#6B4F15" transform="rotate(330 200 200)"/>
+
+          <!-- TRIDENT LOGO CENTER -->
+          <!-- Main shaft -->
+          <line x1="200" y1="155" x2="200" y2="220" stroke="#B8973A" stroke-width="3" stroke-linecap="round"/>
+          <!-- Base crossbar -->
+          <line x1="188" y1="210" x2="212" y2="210" stroke="#B8973A" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="190" y1="216" x2="210" y2="216" stroke="#B8973A" stroke-width="2" stroke-linecap="round"/>
+          <!-- Center prong (tallest) -->
+          <line x1="200" y1="155" x2="200" y2="168" stroke="#B8973A" stroke-width="3" stroke-linecap="round"/>
+          <path d="M196 168 L200 155 L204 168" fill="#B8973A" stroke="none"/>
+          <!-- Left prong -->
+          <line x1="188" y1="162" x2="188" y2="175" stroke="#B8973A" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M185 175 L188 163 L191 175" fill="#B8973A" stroke="none"/>
+          <!-- Left prong connector -->
+          <path d="M188 175 Q188 185 200 185" fill="none" stroke="#B8973A" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Right prong -->
+          <line x1="212" y1="162" x2="212" y2="175" stroke="#B8973A" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M209 175 L212 163 L215 175" fill="#B8973A" stroke="none"/>
+          <!-- Right prong connector -->
+          <path d="M212 175 Q212 185 200 185" fill="none" stroke="#B8973A" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Brand name on dial -->
+          <text x="200" y="242" text-anchor="middle" fill="#B8973A" font-family="Cinzel, serif" font-size="9" letter-spacing="5" font-weight="600">TRITON</text>
+          <text x="200" y="257" text-anchor="middle" fill="rgba(184,151,58,0.4)" font-family="serif" font-size="6" letter-spacing="3">GENÈVE</text>
+
+          <!-- Depth rating -->
+          <text x="200" y="276" text-anchor="middle" fill="rgba(184,151,58,0.3)" font-family="sans-serif" font-size="5.5" letter-spacing="2">300M · 1000FT</text>
+        </g>
+
+        <!-- HANDS (not rotating with face) -->
+        <!-- Hour hand -->
+        <g id="hours-hand">
+          <rect x="197.5" y="130" width="5" height="75" rx="2.5" fill="#E8DFC0"/>
+          <rect x="198.5" y="132" width="3" height="70" rx="1.5" fill="#C4A245" opacity="0.5"/>
+        </g>
+        <!-- Minute hand -->
+        <g id="minutes-hand">
+          <rect x="198.5" y="105" width="3" height="98" rx="1.5" fill="#E8DFC0"/>
+        </g>
+        <!-- Second hand -->
+        <g id="seconds-hand">
+          <rect x="199.4" y="95" width="1.2" height="115" rx="0.6" fill="#CC2200"/>
+          <circle cx="200" cy="108" r="4" fill="#CC2200"/>
+        </g>
+
+        <!-- Center cap -->
+        <circle cx="200" cy="200" r="6" fill="#B8973A"/>
+        <circle cx="200" cy="200" r="3.5" fill="#E8DFC0"/>
+
+        <!-- Subtle dial reflection -->
+        <ellipse cx="170" cy="155" rx="40" ry="25" fill="rgba(255,255,255,0.018)" transform="rotate(-20 170 155)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <span>Discover</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<div class="ocean-divider"></div>
+
+<!-- ABOUT / HERITAGE -->
+<section id="about">
+  <svg class="trident-watermark" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+    <line x1="100" y1="20" x2="100" y2="260" stroke="white" stroke-width="8"/>
+    <line x1="60" y1="240" x2="140" y2="240" stroke="white" stroke-width="6"/>
+    <line x1="68" y1="255" x2="132" y2="255" stroke="white" stroke-width="5"/>
+    <line x1="100" y1="20" x2="100" y2="60" stroke="white" stroke-width="8"/>
+    <path d="M90 60 L100 20 L110 60" fill="white"/>
+    <line x1="68" y1="32" x2="68" y2="70" stroke="white" stroke-width="6"/>
+    <path d="M60 70 L68 33 L76 70" fill="white"/>
+    <path d="M68 70 Q68 100 100 100" fill="none" stroke="white" stroke-width="6"/>
+    <line x1="132" y1="32" x2="132" y2="70" stroke="white" stroke-width="6"/>
+    <path d="M124 70 L132 33 L140 70" fill="white"/>
+    <path d="M132 70 Q132 100 100 100" fill="none" stroke="white" stroke-width="6"/>
+  </svg>
+
+  <div class="section-inner">
+    <div>
+      <p class="section-label reveal">Heritage &amp; Vision</p>
+      <div class="gold-line reveal reveal-delay-1"></div>
+      <h2 class="section-heading reveal reveal-delay-2">Born of<br>Ancient Waters</h2>
+      <p class="section-body reveal reveal-delay-3">
+        TRITON draws its essence from the god of the sea — sovereign, immovable, eternal.
+        Each timepiece carries the trident as more than a mark; it is a covenant between the maker
+        and the deep, a promise of precision that holds under every pressure the world can exert.
+      </p>
+      <p class="section-body reveal reveal-delay-4" style="margin-top: 1.5rem;">
+        Founded in Geneva's watch-making quarter, TRITON unites centuries of Swiss craft
+        with a design language that refuses the ordinary. The dial is an ocean at midnight.
+        The case, an anchor against time itself.
+      </p>
+    </div>
+
+    <div class="about-stat-grid reveal reveal-delay-2">
+      <div class="stat-cell">
+        <div class="stat-number">150K</div>
+        <div class="stat-label">Opening Budget</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">300M</div>
+        <div class="stat-label">Water Resistance</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">72h</div>
+        <div class="stat-label">Power Reserve</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">1/∞</div>
+        <div class="stat-label">Each Unique</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUDGET BANNER -->
+<div id="budget">
+  <div class="budget-inner">
+    <div class="reveal">
+      <p class="budget-label">Inaugural Collection Fund</p>
+      <div class="budget-amount"><span>$</span>150,000</div>
+    </div>
+    <p class="budget-text reveal reveal-delay-2">
+      Allocated across design, master movement sourcing, case engineering,
+      and the atelier's first limited series of twelve signed pieces — each numbered,
+      each unrepeatable.
+    </p>
+  </div>
+</div>
+
+<div class="ocean-divider"></div>
+
+<!-- COLLECTION -->
+<section id="collection">
+  <div class="section-inner">
+    <p class="section-label reveal" style="margin: 0 auto;">Inaugural References</p>
+    <div class="gold-line reveal reveal-delay-1" style="margin: 2rem auto;"></div>
+    <h2 class="section-heading reveal reveal-delay-2" style="text-align: center; margin: 0 auto 0;">The First Twelve</h2>
+
+    <div class="collection-grid reveal reveal-delay-3">
+      <div class="collection-card">
+        <p class="card-number">REF. 001</p>
+        <h3 class="card-name">Pelagic Noir</h3>
+        <p class="card-desc">Matte black DLC case with deep-ocean blue-black dial. 
+        The midnight watch for those who measure depth in fathoms and time in lifetimes.</p>
+        <p class="card-price">On Application</p>
+      </div>
+      <div class="collection-card">
+        <p class="card-number">REF. 002</p>
+        <h3 class="card-name">Gold Trident</h3>
+        <p class="card-desc">18k brushed yellow gold case. Dial hand-guilloché by a single 
+        craftsman in a tradition unchanged since 1847. The trident in full ceremonial relief.</p>
+        <p class="card-price">On Application</p>
+      </div>
+      <div class="collection-card">
+        <p class="card-number">REF. 003</p>
+        <h3 class="card-name">Abyss Steel</h3>
+        <p class="card-desc">Grade 5 titanium with polished flanks. The instrument watch — 
+        anti-magnetic, anti-shock, and calibrated to within two seconds per day.</p>
+        <p class="card-price">On Application</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ocean-divider"></div>
+
+<!-- CRAFT -->
+<section id="craft">
+  <div class="section-inner">
+    <div>
+      <p class="section-label reveal">The Movement</p>
+      <div class="gold-line reveal reveal-delay-1"></div>
+      <h2 class="section-heading reveal reveal-delay-2">Crafted at<br>Every Scale</h2>
+      <p class="section-body reveal reveal-delay-3">
+        The calibre inside each TRITON is decorated by hand, finished to haute horology
+        standards, and regulated across five positions. We do not rush the sea.
+      </p>
+
+      <div class="craft-features">
+        <div class="feature-item reveal reveal-delay-1">
+          <span class="feature-num">01</span>
+          <div class="feature-text">
+            <h4>Swiss Lever Escapement</h4>
+            <p>A traditional lever geometry, refined with modern micro-tolerances for unmatched shock resistance and energy efficiency under deep pressure.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-delay-2">
+          <span class="feature-num">02</span>
+          <div class="feature-text">
+            <h4>Côtes de Genève Finishing</h4>
+            <p>Every rotor, plate, and bridge is hand-decorated with parallel stripes visible only under magnification — beauty for its own sake.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-delay-3">
+          <span class="feature-num">03</span>
+          <div class="feature-text">
+            <h4>Trident Signed Movement</h4>
+            <p>The gold trident motif is engraved on the rotor of every piece. The signature of the sea, hidden beneath the dial, worn against the wrist.</p>
+          </div>
+        </div>
+        <div class="feature-item reveal reveal-delay-4">
+          <span class="feature-num">04</span>
+          <div class="feature-text">
+            <h4>Anti-Magnetic Architecture</h4>
+            <p>Silicon hairspring and non-ferrous alloy bridges ensure accuracy in fields up to 15,000 A/m — from boardroom to ocean floor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Watch Diagram -->
+    <div class="reveal reveal-delay-2" style="display: flex; justify-content: center; align-items: center;">
+      <svg class="watch-detail-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="detailDial" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#0D1428"/>
+            <stop offset="100%" stop-color="#030710"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Exploded view labels -->
+        <text x="20" y="30" fill="#B8973A" font-family="Cinzel,serif" font-size="9" letter-spacing="3">ANATOMY</text>
+        <line x1="20" y1="36" x2="380" y2="36" stroke="#B8973A" stroke-width="0.5" opacity="0.4"/>
+
+        <!-- Crystal layer -->
+        <ellipse cx="200" cy="120" rx="130" ry="18" fill="rgba(100,140,200,0.12)" stroke="#6496C8" stroke-width="0.5"/>
+        <text x="345" y="124" fill="rgba(184,151,58,0.6)" font-family="sans-serif" font-size="7" text-anchor="start">Sapphire Crystal</text>
+        <line x1="332" y1="120" x2="343" y2="120" stroke="rgba(184,151,58,0.4)" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Bezel -->
+        <ellipse cx="200" cy="190" rx="148" ry="20" fill="url(#bezelGrad)" stroke="#B8973A" stroke-width="1"/>
+        <text x="360" y="194" fill="rgba(184,151,58,0.6)" font-family="sans-serif" font-size="7" text-anchor="start">Gold Bezel</text>
+        <line x1="350" y1="190" x2="358" y2="190" stroke="rgba(184,151,58,0.4)" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Case -->
+        <ellipse cx="200" cy="250" rx="155" ry="22" fill="#1A150E" stroke="#3A2E14" stroke-width="1.5"/>
+        <text x="365" y="254" fill="rgba(184,151,58,0.6)" font-family="sans-serif" font-size="7" text-anchor="start">Titanium Case</text>
+        <line x1="357" y1="250" x2="363" y2="250" stroke="rgba(184,151,58,0.4)" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Dial -->
+        <ellipse cx="200" cy="310" rx="130" ry="18" fill="url(#detailDial)" stroke="#B8973A" stroke-width="0.8"/>
+        <!-- Mini trident on dial -->
+        <line x1="200" y1="298" x2="200" y2="318" stroke="#B8973A" stroke-width="2"/>
+        <path d="M196 305 L200 296 L204 305" fill="#B8973A"/>
+        <path d="M192 299 Q192 307 200 307" fill="none" stroke="#B8973A" stroke-width="1.5"/>
+        <path d="M208 299 Q208 307 200 307" fill="none" stroke="#B8973A" stroke-width="1.5"/>
+        <text x="365" y="314" fill="rgba(184,151,58,0.6)" font-family="sans-serif" font-size="7" text-anchor="start">Signed Dial</text>
+        <line x1="332" y1="310" x2="363" y2="310" stroke="rgba(184,151,58,0.4)" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Movement -->
+        <ellipse cx="200" cy="380" rx="115" ry="16" fill="#0A0808" stroke="rgba(184,151,58,0.3)" stroke-width="1"/>
+        <!-- Movement gears suggestion -->
+        <circle cx="185" cy="380" r="12" fill="none" stroke="rgba(184,151,58,0.25)" stroke-width="1"/>
+        <circle cx="210" cy="380" r="8" fill="none" stroke="rgba(184,151,58,0.2)" stroke-width="1"/>
+        <circle cx="224" cy="376" r="5" fill="none" stroke="rgba(184,151,58,0.18)" stroke-width="1"/>
+        <text x="365" y="384" fill="rgba(184,151,58,0.6)" font-family="sans-serif" font-size="7" text-anchor="start">Calibre TRN-01</text>
+        <line x1="317" y1="380" x2="363" y2="380" stroke="rgba(184,151,58,0.4)" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Caseback -->
+        <ellipse cx="200" cy="450" rx="130" ry="16" fill="#151008" stroke="#2A2010" stroke-width="1"/>
+        <text x="345" y="454" fill="rgba(184,151,58,0.6)" font-family="sans-serif" font-size="7" text-anchor="start">Exhibition Caseback</text>
+        <line x1="332" y1="450" x2="343" y2="450" stroke="rgba(184,151,58,0.4)" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+        <!-- Vertical connecting lines -->
+        <line x1="200" y1="138" x2="200" y2="170" stroke="rgba(184,151,58,0.15)" stroke-width="0.5" stroke-dasharray="3,4"/>
+        <line x1="200" y1="208" x2="200" y2="228" stroke="rgba(184,151,58,0.15)" stroke-width="0.5" stroke-dasharray="3,4"/>
+        <line x1="200" y1="272" x2="200" y2="292" stroke="rgba(184,151,58,0.15)" stroke-width="0.5" stroke-dasharray="3,4"/>
+        <line x1="200" y1="328" x2="200" y2="364" stroke="rgba(184,151,58,0.15)" stroke-width="0.5" stroke-dasharray="3,4"/>
+        <line x1="200" y1="396" x2="200" y2="434" stroke="rgba(184,151,58,0.15)" stroke-width="0.5" stroke-dasharray="3,4"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<div class="ocean-divider"></div>
+
+<!-- HERITAGE QUOTE -->
+<section id="heritage">
+  <div class="section-inner">
+    <p class="section-label reveal" style="display: block; text-align: center; width: 100%;">The TRITON Oath</p>
+    <div class="gold-line reveal reveal-delay-1" style="margin: 2rem auto;"></div>
+
+    <div class="heritage-quote reveal reveal-delay-2">
+      We do not make watches.<br>We make the measure of a life worth living —<br>
+      forged where the surface meets the dark,<br>
+      and time becomes something you <em>choose</em> to keep.
+    </div>
+
+    <div class="gold-line reveal reveal-delay-3" style="margin: 3rem auto 0;"></div>
+
+    <div class="reveal reveal-delay-4" style="text-align: center; margin-top: 3rem;">
+      <p style="font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1.5rem;">Inquire for Commission</p>
+      <a href="#" style="display: inline-block; font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.3em; color: var(--gold); border: 1px solid rgba(184,151,58,0.4); padding: 1.2rem 3rem; text-decoration: none; text-transform: uppercase; transition: all 0.3s;">
+        Contact the Atelier
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-logo">TRITON</p>
+  <p class="footer-copy">Geneva, Switzerland · Est. MMXXV · Budget: $150,000</p>
+  <p class="footer-copy">⚓ Forged in Depth</p>
+</footer>
+
+<script>
+  // Scroll progress bar
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Set watch hands to current time
+  function setWatchTime() {
+    const now = new Date();
+    const s = now.getSeconds();
+    const m = now.getMinutes() + s / 60;
+    const h = (now.getHours() % 12) + m / 60;
+
+    const secDeg = s * 6;
+    const minDeg = m * 6;
+    const hourDeg = h * 30;
+
+    document.getElementById('seconds-hand').style.transform = `rotate(${secDeg}deg)`;
+    document.getElementById('minutes-hand').style.transform = `rotate(${minDeg}deg)`;
+    document.getElementById('hours-hand').style.transform = `rotate(${hourDeg}deg)`;
+
+    // Remove animation and use JS ticking
+    document.getElementById('seconds-hand').style.animation = 'none';
+    document.getElementById('minutes-hand').style.animation = 'none';
+    document.getElementById('hours-hand').style.animation = 'none';
+  }
+
+  setWatchTime();
+  setInterval(setWatchTime, 1000);
+
+  // Nav active state on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 200) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current
+        ? 'var(--gold-light)'
+        : '';
+    });
+  });
+</script>
+</body>
+</html>
